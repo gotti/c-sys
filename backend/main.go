@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type locationData struct {
-	gorm.Model
+	ID         uint   `gorm:"primaryKey" json:"-"`
 	Uuid       string `json:"id"`
 	Fetched_at int64  `json:"fetchedAt"`
 	X          int    `json:"x"`
@@ -34,15 +34,8 @@ func (db *gormDB) catLocationsWithinMinute(until int64) *[]locationData {
 
 func (db *gormDB) insertLocationData(locations *[]locationData) {
 	for _, l := range *locations {
-		db.Create(l)
+		db.Create(&l)
 	}
-}
-
-func (db *gormDB) createTableIfNotExists() error {
-	if !db.HasTable(&locationData{}) {
-		db.CreateTable(&locationData{})
-	}
-	return nil
 }
 
 func (db *gormDB) fetchLocationData(since, until int64) (*[]locationData, error) {
@@ -83,6 +76,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(ret)
 	} else if query.Get("since") != "" && query.Get("until") != "" {
+		//sinceとuntilの両方が指定されたらこれ
 		since, err := strconv.ParseInt(query.Get("since"), 10, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -109,13 +103,13 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	d, err := gorm.Open("mysql", os.Getenv("DB"))
+	d, err := gorm.Open(postgres.Open(os.Getenv("DB")), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer d.Close()
 	db = gormDB{d}
+	db.AutoMigrate(&locationData{})
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/locations", postHandler).Methods("POST")
 	router.HandleFunc("/locations", getHandler).Methods("GET")
