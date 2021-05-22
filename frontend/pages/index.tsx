@@ -5,9 +5,10 @@ import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import Copyright from "../src/Copyright";
 import axios from "axios";
+import { Scatter } from "react-chartjs-2";
 
 interface IndexState {
-  response: Array<any>;
+  response: Array<{ id: number; fetchedAt: number; x: number; y: number }>;
 }
 function getNowUnixTime(): number {
   // Dateオブジェクトを作成
@@ -42,10 +43,31 @@ export default class extends Component<{}, IndexState> {
   }
   render() {
     let str = "";
+    let data: [{ x: number; y: number }] = [];
     for (const r of this.state.response) {
       console.log(r);
       str += `id: ${r.id}, fetchedAt: ${r.fetchedAt}, x: ${r.x}, y: ${r.y}`;
+      data.push({ x: r.x, y: r.y });
     }
+    const scatter_data = {
+      datasets: [
+        {
+          label: "Scatter Dataset",
+          type: "line",
+          showLine: true,
+          data: data,
+          backgroundColor: "rgb(255, 99, 132)",
+        },
+      ],
+    };
+    const config = {
+      scales: {
+        x: {
+          type: "linear",
+          position: "bottom",
+        },
+      },
+    };
     return (
       <Container maxWidth="sm">
         <Box my={4}>
@@ -55,6 +77,7 @@ export default class extends Component<{}, IndexState> {
           <Button variant="contained" color="primary">
             Primary
           </Button>
+          <Scatter data={scatter_data} options={config} />
           {"response: " + str}
           <Copyright />
         </Box>
