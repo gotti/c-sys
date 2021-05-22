@@ -4,9 +4,11 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "latest",
+    "chart.js": "^3.2.1",
     "clsx": "latest",
     "next": "latest",
     "react": "latest",
+    "react-chartjs-2": "^3.0.3",
     "react-dom": "latest"
   },
   "scripts": {
