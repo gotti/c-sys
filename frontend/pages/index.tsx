@@ -42,9 +42,8 @@ export default class extends Component<{}, IndexState> {
   state: IndexState = {
     response: [],
     scatter_data: {},
-    slider_value: getUnixTime(new Date()),
+    slider_value: [getUnixTime(new Date()) - 60, getUnixTime(new Date())],
   };
-  reference: any;
   constructor(props: any) {
     super(props);
     this.onButtonClick = this.onButtonClick.bind(this);
@@ -52,12 +51,19 @@ export default class extends Component<{}, IndexState> {
     this.onSliderChange = this.onSliderChange.bind(this);
     this.updatePositionData = this.updatePositionData.bind(this);
   }
-  updatePositionData(unixtime: number) {
+  updatePositionData(unixtime: number | number[]) {
+    let since = 0;
+    let until = 0;
+    if (typeof unixtime === "number") {
+      since = unixtime - 60;
+      until = unixtime;
+    } else {
+      since = unixtime[0];
+      until = unixtime[1];
+    }
     axios
       .get(
-        `https://gotti.dev/api/c-sys/locations?since=${
-          unixtime - 60
-        }&until=${unixtime}`
+        `https://gotti.dev/api/c-sys/locations?since=${since}&until=${until}`
       )
       .then((results) => {
         console.log(results.data);
@@ -87,7 +93,6 @@ export default class extends Component<{}, IndexState> {
   }
   componentDidMount() {
     this.updatePositionData(this.state.slider_value);
-    //上手く最初に更新するのができません…
   }
   onButtonClick() {
     const x = Math.floor(Math.random() * 300);
@@ -108,17 +113,16 @@ export default class extends Component<{}, IndexState> {
       .catch(() => {});
   }
   onSliderChangeCommited(
-    event: React.ChangeEvent<{}>,
+    _event: React.ChangeEvent<{}>,
     value: number | number[]
   ) {
     this.updatePositionData(value);
   }
-  onSliderChange(event: React.ChangeEvent<{}>, value: number | number[]) {
+  onSliderChange(_event: React.ChangeEvent<{}>, value: number | number[]) {
     this.setState({ slider_value: value });
   }
   render() {
     let str = "";
-    let data = [];
     for (const r of this.state.response) {
       str += `id: ${r.id}, fetchedAt: ${r.fetchedAt}, x: ${r.x}, y: ${
         r.y
@@ -154,10 +158,8 @@ export default class extends Component<{}, IndexState> {
           </Button>
           <Scatter
             type="scatter"
-            key={Math.random()}
             data={this.state.scatter_data}
             options={config}
-            ref={(reference) => (this.reference = reference)}
           />
           <br />
           <CustomSlider
