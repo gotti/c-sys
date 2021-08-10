@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
@@ -9,18 +9,15 @@ import axios from "axios";
 import { Scatter } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import { withStyles } from "@material-ui/core/styles";
-interface IndexState {
-  response: Array<{ id: number; fetchedAt: number; x: number; y: number }>;
-  scatter_data: Chart.ChartData;
-  slider_value: number | number[];
-}
+
 function getUnixTime(date: Date): number {
   // UNIXタイムスタンプを取得する (ミリ秒単位)
-  var a = date.getTime();
+  const a = date.getTime();
   // UNIXタイムスタンプを取得する (秒単位 - PHPのtime()と同じ)
-  var b = Math.floor(a / 1000);
+  const b = Math.floor(a / 1000);
   return b;
 }
+
 function getDateFromUnixTime(time: number): Date {
   return new Date(time * 1000);
 }
@@ -35,23 +32,22 @@ const CustomSlider = withStyles({
     },
   },
 })(Slider);
+
 function get0hourDate(day: Date): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate());
 }
-export default class extends Component<{}, IndexState> {
-  state: IndexState = {
-    response: [],
-    scatter_data: {},
-    slider_value: [getUnixTime(new Date()) - 60, getUnixTime(new Date())],
-  };
-  constructor(props: any) {
-    super(props);
-    this.onButtonClick = this.onButtonClick.bind(this);
-    this.onSliderChangeCommited = this.onSliderChangeCommited.bind(this);
-    this.onSliderChange = this.onSliderChange.bind(this);
-    this.updatePositionData = this.updatePositionData.bind(this);
-  }
-  updatePositionData(unixtime: number | number[]) {
+
+export default () => {
+  const [response, setResponse] = useState<
+    Array<{ id: number; fetchedAt: number; x: number; y: number }>
+  >([]);
+  const [scatter_data, setScatterData] = useState<Chart.ChartData>();
+  const [slider_value, setSliderValue] = useState<number | number[]>([
+    getUnixTime(new Date()) - 60,
+    getUnixTime(new Date()),
+  ]);
+
+  const updatePositionData = (unixtime: number | number[]) => {
     let since = 0;
     let until = 0;
     if (typeof unixtime === "number") {
@@ -82,19 +78,17 @@ export default class extends Component<{}, IndexState> {
             },
           ],
         };
-        this.setState({
-          response: results.data,
-          scatter_data: scatter_data,
-        });
+        setResponse(results.data);
+        setScatterData(scatter_data);
       })
       .catch((error) => {
         console.log(error);
       });
-  }
-  componentDidMount() {
-    this.updatePositionData(this.state.slider_value);
-  }
-  onButtonClick() {
+  };
+  useEffect(() => {
+    updatePositionData(slider_value);
+  });
+  const handleButtonClick = () => {
     const x = Math.floor(Math.random() * 300);
     const y = Math.floor(Math.random() * 300);
     const fetchedAt = getUnixTime(new Date());
@@ -111,19 +105,23 @@ export default class extends Component<{}, IndexState> {
         ]
       )
       .catch(() => {});
-  }
-  onSliderChangeCommited(
+  };
+
+  const handleSliderChangeCommited = (
     _event: React.ChangeEvent<{}>,
     value: number | number[]
-  ) {
-    this.updatePositionData(value);
-  }
-  onSliderChange(_event: React.ChangeEvent<{}>, value: number | number[]) {
-    this.setState({ slider_value: value });
-  }
-  render() {
+  ) => {
+    updatePositionData(value);
+  };
+  const handleSliderChange = (
+    _event: React.ChangeEvent<{}>,
+    value: number | number[]
+  ) => {
+    setSliderValue(value);
+  };
+  {
     let str = "";
-    for (const r of this.state.response) {
+    for (const r of response) {
       str += `id: ${r.id}, fetchedAt: ${r.fetchedAt}, x: ${r.x}, y: ${
         r.y
       }, ${getDateFromUnixTime(r.fetchedAt).toString()}\n`;
@@ -152,18 +150,14 @@ export default class extends Component<{}, IndexState> {
           <Button
             variant="contained"
             color="primary"
-            onClick={this.onButtonClick}
+            onClick={handleButtonClick}
           >
             Primary
           </Button>
-          <Scatter
-            type="scatter"
-            data={this.state.scatter_data}
-            options={config}
-          />
+          <Scatter type="scatter" data={scatter_data} options={config} />
           <br />
           <CustomSlider
-            value={this.state.slider_value}
+            value={slider_value}
             step={60}
             min={min_time}
             max={max_time}
@@ -171,8 +165,8 @@ export default class extends Component<{}, IndexState> {
               { value: min_time, label: "0時" },
               { value: max_time, label: "24時" },
             ]}
-            onChangeCommitted={this.onSliderChangeCommited}
-            onChange={this.onSliderChange}
+            onChangeCommitted={handleSliderChangeCommited}
+            onChange={handleSliderChange}
             valueLabelDisplay="on"
             valueLabelFormat={(value) => {
               const date = getDateFromUnixTime(value);
@@ -185,4 +179,4 @@ export default class extends Component<{}, IndexState> {
       </Container>
     );
   }
-}
+};
