@@ -1,0 +1,34 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1 
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: set
+      run: |
+        echo $GITHUB_SHA
+        echo "GIT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
+    - name: Build and push to GitHub Container Registry
+      uses: docker/build-push-action@v2
+      with:
+        context: ./backend
+        platforms: linux/amd64
+        push: true
+        tags: ghcr.io/gotti/nginx-static:${{ env.GIT_SHA }}
+
+
