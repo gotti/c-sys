@@ -29,6 +29,6 @@ jobs:
         context: ./backend
         platforms: linux/amd64
         push: true
-        tags: ghcr.io/gotti/nginx-static:${{ env.GIT_SHA }}
+        tags: ghcr.io/gotti/c-sys:${{ env.GIT_SHA }}
 
 
