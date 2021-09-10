@@ -1,9 +1,16 @@
-FROM ubuntu:20.10
+FROM golang:1.17-buster as build
 
-RUN apt update -qq && apt upgrade
+WORKDIR /go/src/app
+ADD . /go/src/app
 
-WORKDIR /cps
+RUN go get -d -v ./...
 
-COPY bin/main /cps/main
+RUN go build -o /go/bin/app cmd/main.go
 
-CMD ["main"]
+# Now copy it into our base image.
+FROM gcr.io/distroless/base-debian10
+COPY --from=build /go/bin/app /
+
+COPY ./files/* /
+
+CMD ["/app"]
