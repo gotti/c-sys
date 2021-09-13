@@ -89,7 +89,7 @@ export default () => {
   };
   useEffect(() => {
     updatePositionData(slider_value);
-  });
+  }, []);
   const handleButtonClick = () => {
     const x = Math.floor(Math.random() * 300);
     const y = Math.floor(Math.random() * 300);
