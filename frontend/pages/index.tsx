@@ -10,6 +10,8 @@ import { Scatter } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import { withStyles } from "@material-ui/core/styles";
 
+const endPoint = "https://csys-api.gotti.dev/locations";
+
 function getUnixTime(date: Date): number {
   // UNIXタイムスタンプを取得する (ミリ秒単位)
   const a = date.getTime();
@@ -59,7 +61,7 @@ export default () => {
     }
     axios
       .get(
-        `https://gotti.dev/api/c-sys/locations?since=${since}&until=${until}`
+        `${endPoint}?since=${since}&until=${until}`
       )
       .then((results) => {
         console.log(results.data);
@@ -94,7 +96,7 @@ export default () => {
     const fetchedAt = getUnixTime(new Date());
     axios
       .post(
-        `https://gotti.dev/api/c-sys/locations?token=RupAzEMmjVdt2V88TTVyJHQtL`,
+        `${endPoint}?token=RupAzEMmjVdt2V88TTVyJHQtL`,
         [
           {
             id: "aaaaa",
