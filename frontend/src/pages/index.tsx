@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import Slider from "@material-ui/core/Slider";
-import Copyright from "../src/Copyright";
+import Copyright from "../components/Copyright";
 import axios from "axios";
 import { Scatter } from "react-chartjs-2";
 import Chart from "chart.js/auto";
