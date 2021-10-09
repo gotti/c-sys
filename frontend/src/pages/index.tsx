@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import Slider from "@material-ui/core/Slider";
 import Copyright from "../components/Copyright";
 import PropMap from "../components/PropMap";
 import { PropData } from "../types/APITypes";
 import axios from "axios";
-import { Scatter } from "react-chartjs-2";
-import Chart from "chart.js/auto";
 import { withStyles } from "@material-ui/core/styles";
 
 const endPoint = "https://csys-api.gotti.dev/locations";
@@ -43,7 +40,6 @@ function get0hourDate(day: Date): Date {
 
 export default () => {
   const [response, setResponse] = useState<PropData[]>([]);
-  const [scatter_data, setScatterData] = useState<Chart.ChartData>();
   const [slider_value, setSliderValue] = useState<number | number[]>([
     getUnixTime(new Date()) - 60,
     getUnixTime(new Date()),
@@ -69,19 +65,7 @@ export default () => {
         for (const r of results.data) {
           data.push({ x: r.x, y: r.y });
         }
-        let scatter_data: Chart.ChartData = {
-          datasets: [
-            {
-              label: "Scatter Dataset",
-              type: "line",
-              showLine: true,
-              data: data,
-              backgroundColor: "rgb(255, 99, 132)",
-            },
-          ],
-        };
         setResponse(results.data);
-        setScatterData(scatter_data);
       })
       .catch((error) => {
         console.log(error);
@@ -90,24 +74,6 @@ export default () => {
   useEffect(() => {
     updatePositionData(slider_value);
   }, []);
-  const handleButtonClick = () => {
-    const x = Math.floor(Math.random() * 300);
-    const y = Math.floor(Math.random() * 300);
-    const fetchedAt = getUnixTime(new Date());
-    axios
-      .post(
-        `${endPoint}?token=RupAzEMmjVdt2V88TTVyJHQtL`,
-        [
-          {
-            id: "aaaaa",
-            x: x,
-            y: y,
-            fetchedAt: fetchedAt,
-          },
-        ]
-      )
-      .catch(() => {});
-  };
 
   const handleSliderChangeCommited = (
     _event: React.ChangeEvent<{}>,
@@ -129,17 +95,6 @@ export default () => {
       }, ${getDateFromUnixTime(r.fetchedAt).toString()}\n`;
     }
     const now = new Date();
-    const config: Chart.ChartOptions = {
-      scales: {
-        x: {
-          type: "linear",
-          position: "bottom",
-        },
-      },
-      animation: {
-        duration: 0,
-      },
-    };
     const min_time = getUnixTime(get0hourDate(now));
     const max_time = min_time + 24 * 3600;
     //UnixTime number
@@ -149,16 +104,9 @@ export default () => {
           <Typography variant="h4" component="h1" gutterBottom>
             Next.js with TypeScript example
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleButtonClick}
-          >
-            Primary
-          </Button>
-          <Scatter type="scatter" data={scatter_data} options={config} />
           <br />
-          <PropMap width={200} height={100} propDatas={response} />
+          {/* widthとheightは将来APIから取得するようになるかもしれない */}
+          <PropMap width={300} height={500} propDatas={response} />
           <br />
           <CustomSlider
             value={slider_value}
