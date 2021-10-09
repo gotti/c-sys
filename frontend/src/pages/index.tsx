@@ -5,6 +5,8 @@ import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import Slider from "@material-ui/core/Slider";
 import Copyright from "../components/Copyright";
+import PropMap from "../components/PropMap";
+import { PropData } from "../types/APITypes";
 import axios from "axios";
 import { Scatter } from "react-chartjs-2";
 import Chart from "chart.js/auto";
@@ -40,9 +42,7 @@ function get0hourDate(day: Date): Date {
 }
 
 export default () => {
-  const [response, setResponse] = useState<
-    Array<{ id: number; fetchedAt: number; x: number; y: number }>
-  >([]);
+  const [response, setResponse] = useState<PropData[]>([]);
   const [scatter_data, setScatterData] = useState<Chart.ChartData>();
   const [slider_value, setSliderValue] = useState<number | number[]>([
     getUnixTime(new Date()) - 60,
@@ -157,6 +157,8 @@ export default () => {
             Primary
           </Button>
           <Scatter type="scatter" data={scatter_data} options={config} />
+          <br />
+          <PropMap width={200} height={100} propDatas={response} />
           <br />
           <CustomSlider
             value={slider_value}
