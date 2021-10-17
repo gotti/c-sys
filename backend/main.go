@@ -16,11 +16,11 @@ import (
 )
 
 type locationData struct {
-	ID         uint   `gorm:"primaryKey" json:"-"`
-	Uuid       string `json:"id"`
-	Fetched_at int64  `json:"fetchedAt"`
-	X          int    `json:"x"`
-	Y          int    `json:"y"`
+	ID        uint   `gorm:"primaryKey" json:"-"`
+	DataID    string `json:"id"`
+	FetchedAt int64  `json:"fetchedAt"`
+	X         int    `json:"x"`
+	Y         int    `json:"y"`
 }
 
 type gormDB struct {
@@ -52,10 +52,11 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("403 Forbidden\n"))
 	}
 	body, _ := ioutil.ReadAll(r.Body)
+	unquoted, err := strconv.Unquote(string(body))
 	var data []locationData
-	err := json.Unmarshal(body, &data)
+	err = json.Unmarshal([]byte(unquoted), &data)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 Internal Server Error\n"))
 	}
