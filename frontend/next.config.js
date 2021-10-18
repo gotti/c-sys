@@ -1,6 +1,6 @@
 module.exports = {
-  assetPrefix: "/visualizer",
-  basePath: "/visualizer",
+  assetPrefix: "",
+  basePath: "",
   trailingSlash: true,
 };
 
